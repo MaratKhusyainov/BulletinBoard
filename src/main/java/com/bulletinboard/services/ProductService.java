@@ -32,16 +32,16 @@ public class ProductService {
         Image image1;
         Image image2;
         Image image3;
-        if(file1.getSize() != 0) {
+        if (file1.getSize() != 0) {
             image1 = toImageEntity(file1);
             image1.setPreviewImage(true);
             product.addImageToProduct(image1);
         }
-        if(file2.getSize() != 0) {
+        if (file2.getSize() != 0) {
             image2 = toImageEntity(file2);
             product.addImageToProduct(image2);
         }
-        if(file3.getSize() != 0) {
+        if (file3.getSize() != 0) {
             image3 = toImageEntity(file3);
             product.addImageToProduct(image3);
         }
@@ -49,7 +49,6 @@ public class ProductService {
         Product productFromDb = productRepository.save(product);
         productFromDb.setPreviewImageId(productFromDb.getImages().get(0).getId());
         productRepository.save(product);
-
     }
 
     public User getUserByPrincipal(Principal principal) {
@@ -67,11 +66,19 @@ public class ProductService {
         return image;
     }
 
-
-    public void deleteProduct(Long id) {
-        productRepository.deleteById(id);
-
-    }
+    public void deleteProduct(User user, Long id) {
+        Product product = productRepository.findById(id)
+                .orElse(null);
+        if (product != null) {
+            if (product.getUser().getId().equals(user.getId())) {
+                productRepository.delete(product);
+                log.info("Product with id = {} was deleted", id);
+            } else {
+                log.error("User: {} haven't this product with id = {}", user.getEmail(), id);
+            }
+        } else {
+            log.error("Product with id = {} is not found", id);
+        }    }
 
     public Product getProductById(Long id) {
         return productRepository.findById(id).orElse(null);
